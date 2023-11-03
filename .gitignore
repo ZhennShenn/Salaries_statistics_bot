@@ -1,0 +1,10 @@
+__pycache__/
+
+# Configurations
+config.py
+
+# Virtual environments
+venv/
+
+# IDE specific files
+.idea/
