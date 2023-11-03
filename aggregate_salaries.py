@@ -1,5 +1,4 @@
-import asyncio
-from datetime import timedelta, datetime
+from datetime import timedelta
 from dateutil.relativedelta import relativedelta
 
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -44,15 +43,15 @@ async def aggregate_salaries(dt_from, dt_upto, group_type):
 
     aggregated_data = await collection.aggregate(pipeline).to_list(None)
 
-    dict = {}
+    agg_dict = {}
     for data in aggregated_data:
-        dict[data["date"]] = data["total"]
+        agg_dict[data["date"]] = data["total"]
 
     current_date = dt_from
     while current_date <= dt_upto:
 
-        if current_date not in dict.keys():
-            dict[current_date] = 0
+        if current_date not in agg_dict.keys():
+            agg_dict[current_date] = 0
 
         if group_type == 'day':
             current_date += timedelta(days=1)
@@ -61,10 +60,7 @@ async def aggregate_salaries(dt_from, dt_upto, group_type):
         elif group_type == 'month':
             current_date += relativedelta(months=1)
 
-    sorted_values = sorted(dict.items())
-    # # Формирование ответа
-    # dataset = [data["total"] for data in aggregated_data]
-    # labels = [data["date"] for data in aggregated_data]
+    sorted_values = sorted(agg_dict.items())
 
     labels = []
     dataset = []
@@ -73,21 +69,3 @@ async def aggregate_salaries(dt_from, dt_upto, group_type):
         dataset.append(tup[1])
 
     return {"dataset": dataset, "labels": labels}
-
-
-async def main():
-    # dt_from = datetime(2022, 9, 1)
-    # dt_upto = datetime(2022, 12, 31, 23, 59)
-    # group_type = 'month'
-
-    dt_from = datetime(2022, 10, 1)
-    dt_upto = datetime(2022, 11, 30, 23, 59)
-    # group_type = 'hour'
-    group_type = 'day'
-
-    result = await aggregate_salaries(dt_from, dt_upto, group_type)
-    print(result)
-
-# Запуск асинхронного кода
-loop = asyncio.get_event_loop()
-loop.run_until_complete(main())
